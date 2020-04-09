@@ -13,6 +13,7 @@ import 'editAttendance.dart';
 import 'editTimeTable.dart';
 import 'settings.dart';
 import 'game2.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 //void main() => runApp(setn());
 
@@ -62,6 +63,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
+  _launchURL(String toMailId, String subject, String body) async {
+    var url = 'mailto:$toMailId?subject=$subject&body=$body';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
   AnimationController _controller;
 
   static const List<IconData> icons = const [ Icons.sms, Icons.mail, Icons.extension ];
@@ -93,11 +102,24 @@ class MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             ),
             title: Text('Mark It Down ..2'),
             actions: <Widget>[
+              IconButton(
+                icon: Icon(
+                  Icons.turned_in_not,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  print('bottom sheet');
+                  _settingModalBottomSheet(context);
+                },
+              ),
               PopupMenuButton<String>(
                 onSelected: (r){
                   print("launch redirected " + r);
                   if(r=='1'){
-                    Navigator.push(context,MaterialPageRoute(builder: (context) => setn()));
+//                    Navigator.push(context,MaterialPageRoute(builder: (context) => setn()));
+                    print('launching e-mail');
+                    _launchURL('aovisuals247@gmail.com', 'Feedback for MID app', 'Dear Developer,');
+                    print('e-mailing done');
                   }
                   else if(r=='2'){
                     Navigator.push(context,MaterialPageRoute(builder: (context) => editTT()));
@@ -128,10 +150,6 @@ class MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   const PopupMenuItem<String>(
                     value: "4",
                     child: Text('Profile'),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: "5",
-                    child: Text('Developer'),
                   ),
                 ],
               )
@@ -179,10 +197,12 @@ class MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     onPressed: () {
                       if(index == 0){
 //                        Navigator.push(context,MaterialPageRoute(builder: (context) => setn()));
-                        _settingModalBottomSheet(context);
+//                        _settingModalBottomSheet(context);
+                        extraCls(context);
                       }
                       else if(index == 1){
-                        Navigator.push(context,MaterialPageRoute(builder: (context) => editTT()));
+//                        Navigator.push(context,MaterialPageRoute(builder: (context) => editTT()));
+                        cancelCls(context);
 
                       }
                       else if(index == 2){
@@ -454,6 +474,84 @@ class timeTable extends StatelessWidget{
 
 }
 
+void extraCls(context){
+  String dropdownValue = 'One';
+  showDialog(
+      context: context,
+      builder: (BuildContext context){
+        return AlertDialog(
+          title: Text('Add Extra Class'),
+          content: Container(
+            height: 150,
+            child: Column(
+              children: <Widget>[
+                Text('This shall be added to todays schedule'),
+                TextFormField(
+                  decoration: InputDecoration(
+                      labelText: 'Format: HH : MM'
+                  ),
+                ),
+                DropdownButton<String>(
+                value: dropdownValue,
+                  icon: Icon(Icons.arrow_downward),
+                  iconSize: 24,
+                  elevation: 16,
+                  style: TextStyle(
+                  color: Colors.deepPurple
+                  ),
+                  underline: Container(
+                  height: 2,
+                  color: Colors.deepPurpleAccent,
+                  ),
+                  onChanged: (String newValue) {
+                  dropdownValue = newValue;
+                  },
+                  items: <String>['One', 'Two', 'Free', 'Four']
+                      .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                  );
+                  })
+                  .toList(),
+                  )
+              ],
+                    ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Ok'),
+              onPressed: (){
+                print('Added class by dialog');
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      }
+  );
+}
+
+void cancelCls(context){
+  showDialog(
+      context: context,
+      builder: (BuildContext context){
+        return AlertDialog(
+          title: Text('Cancel Class'),
+          content: Text('This shall be removed from todays schedule'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Ok'),
+              onPressed: (){
+                print('Removed class by dialog');
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      }
+  );
+}
 
 void _settingModalBottomSheet(context){
   showModalBottomSheet(
